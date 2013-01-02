@@ -1,0 +1,169 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <style>
+      body {
+        margin: 0px;
+        padding: 0px;
+      }
+      #myCanvas {
+        border: 1px solid #9C9898;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="myCanvas" width="578" height="400"></canvas>
+    <script>
+      var canvas = document.getElementById('myCanvas');
+      var context = canvas.getContext('2d');
+      var images = [
+        new Image(),
+        new Image(),
+        new Image()
+      ];
+      var cube = { 
+        width: 64,
+        height:64
+      };
+            
+      var level2 = [
+        [2,2,2],
+        [2,1,2,],
+        [2,2,2],
+        [2,1,2],
+        [2,1,2],
+        [2,2,2,],
+        [2,1],
+        [2]
+      ];
+      var level = [
+        [0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0],
+        [0,0,0,0,,,0,0],
+        [0,0,0,,,,0,0],
+        [0,0,0,0,,,0,0],
+        [0,0,0,0,,0,0,0],
+        [0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0],
+        [,0,0,0,0,0,0,0],
+        [,,0,0,0,0,0]
+      ];
+      var level3 = [
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [,0,0],
+      [,0]
+      ]
+      var mouse = {
+        x:0,
+        y:0
+      };
+      
+      var drawLevel = function(left,top,level,callback){
+            
+            // Iterate over level map to get tiles
+            for(var j = left; j < level.length; j++){
+                var plain = level[j];
+                for(var i = top; i < plain.length; i++){
+                    
+                    // calc tile position
+                    var x = (i * cube.width) + (j % 2 == 1? 32 : 0),
+                        y = (j * cube.height/4);
+                       
+                    // if callback call, if not renver tile
+                    if('function' == typeof callback){ 
+                        callback.call(this,{x:x,y:y,level:j,plain:i});
+                    }else{
+                        var cubetype = level[j][i];
+                        if(typeof cubetype != 'undefined'){
+                            context.drawImage(images[cubetype], x, y);
+                        }
+                    }                  
+                    
+                }
+            }
+      }
+      
+      var rect = canvas.getBoundingClientRect();
+      window.addEventListener('mousemove',function(e){
+        mouse.x = e.clientX - rect.left + window.scrollX;
+        mouse.y = e.clientY - rect.top + window.scrollY;
+            
+      });
+
+    
+       ready = function(callback){
+          var loaded = [],items = images;
+          for(i in items){
+            items[i].onload = function(){
+                loaded[i] = true;
+                if(loaded.length == items.length){
+                    callback.call();
+                }
+            };
+          }
+      };
+      
+     ready(function(){
+     
+        window.setInterval(function() {        
+           // context.width = context.width; 
+            canvas.width = canvas.width;
+            drawLevel(0,0,level,function(tile){
+
+                 // context.clearRect(0, 0, context.width, context.height);
+                  
+                    if(mouse.x > tile.x 
+                    && mouse.x < (tile.x + cube.width)
+                    && mouse.y > tile.y
+                    && mouse.y < (tile.y + cube.height/2)
+                    ){
+                        context.strokeStyle = "green";
+                        context.strokeRect(tile.x,tile.y,cube.width,cube.height/2);
+                    }else{
+                    
+                        var cubetype = level[tile.level][tile.plain];
+                        if(typeof cubetype != 'undefined'){
+                            context.drawImage(images[cubetype], tile.x, tile.y);
+                        }
+                    }
+
+
+
+            });
+            drawLevel(0,1,level2);
+            drawLevel(0,0,level3);
+            
+            
+        context.font = '28pt Calibri';
+        context.fillStyle = 'red';
+        context.fillText('Kocham Kasie! ;****', 100, 350);
+            
+            
+            
+        },100);
+     })
+      
+     
+    
+ 
+      images[0].src = 'http://213.5.214.155/dev/game/isometrictest/cube.png';
+      images[1].src = 'http://213.5.214.155/dev/game/isometrictest/cube2.png';
+      images[2].src = 'http://213.5.214.155/dev/game/isometrictest/cube3.png';
+    </script>
+  </body>
+</html>
