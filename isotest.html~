@@ -64,17 +64,40 @@
       [],
       [],
       [],
-      [],
-      [,0,0],
-      [,0]
+      [,,,1,1],
+      [,,1]
       ]
+      
       var mouse = {
         x:0,
         y:0
       };
+      var player = {
+        dir:'right',
+        speed:1,
+        x:6,
+        y:1
+      }
+      var drawTile = function(tile,cubetype){
+        if('undefined' == typeof cubetype){
+          cubetype = (typeof level[tile.level] != 'undefined')? level[tile.level][tile.plain] : 0;
+        }
+        if(typeof cubetype != 'undefined'){
+            context.drawImage(images[cubetype], tile.x, tile.y);
+            
+        }else{
+            context.strokeStyle = "green";
+            context.strokeRect(tile.x,tile.y,cube.width,cube.height/2);
+        }
+      }
       
       var drawLevel = function(left,top,level,callback){
-            
+                     
+            // if callback call, if not renver tile
+            if('function' != typeof callback){ 
+                callback = drawTile;
+            }
+                       
             // Iterate over level map to get tiles
             for(var j = left; j < level.length; j++){
                 var plain = level[j];
@@ -83,26 +106,44 @@
                     // calc tile position
                     var x = (i * cube.width) + (j % 2 == 1? 32 : 0),
                         y = (j * cube.height/4);
-                       
-                    // if callback call, if not renver tile
-                    if('function' == typeof callback){ 
-                        callback.call(this,{x:x,y:y,level:j,plain:i});
-                    }else{
-                        var cubetype = level[j][i];
-                        if(typeof cubetype != 'undefined'){
-                            context.drawImage(images[cubetype], x, y);
-                        }
-                    }                  
+               callback.call(this,{x:x,y:y,level:j,plain:i});                        
+                                     
                     
                 }
             }
       }
       
+      // Mouse Support
       var rect = canvas.getBoundingClientRect();
       window.addEventListener('mousemove',function(e){
         mouse.x = e.clientX - rect.left + window.scrollX;
         mouse.y = e.clientY - rect.top + window.scrollY;
             
+      });
+      
+      // Keyboard Support
+      window.addEventListener('keydown',function(e){
+      var s = player.speed;
+      
+            switch(e.keyCode){
+                case 38: // top
+                    player.dir = 'top';
+                    player.y -=s;
+                break;
+                case 37: // left
+                    player.dir = 'left';
+                    player.x -=s;
+                break;
+                case 39: // right
+                    player.dir = 'right';
+                    player.x +=s;
+                break;
+                case 40: // down
+                    player.dir = 'down';
+                    player.y +=s;
+                break;
+            }
+            console.log(player);
       });
 
     
@@ -125,7 +166,7 @@
             canvas.width = canvas.width;
             drawLevel(0,0,level,function(tile){
 
-                 // context.clearRect(0, 0, context.width, context.height);
+                  //context.clearRect(0, 0, context.width, context.height);
                   
                     if(mouse.x > tile.x 
                     && mouse.x < (tile.x + cube.width)
@@ -144,15 +185,31 @@
 
 
 
+            });/**/
+            drawLevel(1,2,level3);
+            drawLevel(0,1,level2,function(tile){
+           
+                // Get our "player tile"
+                if(tile.level==6 && tile.plain == 1){
+                    tile.level = player.x;
+                    tile.plain = player.y;
+                
+                    tile.x = (tile.level * cube.width) + (tile.plain % 2 == 1? cube.height/2 : 0);
+                    tile.y = (tile.plain * cube.height/4);
+                        
+                    drawTile(tile,2);
+                }else{
+                  //  drawTile(tile);
+                }
+            
             });
-            drawLevel(0,1,level2);
-            drawLevel(0,0,level3);
+            
+
             
             
-        context.font = '28pt Calibri';
-        context.fillStyle = 'red';
-        context.fillText('Kocham Kasie! ;****', 100, 350);
-            
+               context.font = '28pt Calibri';
+                context.fillStyle = 'red';
+                context.fillText('Kocham Kasie! ;*', 100, 350); /**/
             
             
         },100);
